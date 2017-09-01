@@ -18,7 +18,7 @@ module.exports = class {
 
 
     post(resource, payload) {
-        fetch(`${this.host}/api/v1/${resource}?resultFormat=json&access_token=${this.accessToken}`, {
+        return fetch(`${this.host}/api/v1/${resource}?resultFormat=json&access_token=${this.accessToken}`, {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'application/json' }

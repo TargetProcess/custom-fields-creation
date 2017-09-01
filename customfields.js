@@ -1,8 +1,7 @@
-const Api = require('/api');
-const config = require('config');
+const Api = require('./api');
+const config = require('./config');
 
 const api = new Api(config.host, config.accessToken);
-//todo kill the token
 
 
 function setUpProductFields() {
@@ -21,8 +20,16 @@ function setUpProductFields() {
         .then(customFields => {
             customFields.sort(f => f['Name']);
 
-            //todo async → sync loop
-            //customFields.forEach(f => api.post('customfields', f)
+            const forEachSync = (array, asyncFunc, i) => {
+                if (i < customFields.length) {
+                    return asyncFunc(array[i])
+                        .then(res => forEachSync(array, asyncFunc, i+1));
+                } else {
+                    return Promise.resolve();
+                }
+            };
+
+            return forEachSync(customFields, customField => api.post('customfields', customField), 0);
         });
 }
 
@@ -40,10 +47,10 @@ function generateCustomFields(customFieldNames, processIds, entityTypeIds) {
             Required: false,
             IsSystem: true,
             EntityType: {
-                ID: entityTypeId
+                Id: entityTypeId
             },
             Process: {
-                ID: processId
+                Id: processId
             }
         }));
 
@@ -55,10 +62,9 @@ function filterExistingCustomFields(customFieldNames, possibleCustomFields) {
     const fieldsFilter = `('${customFieldNames.join(`','`)}')`;
     return api.get('customfields', `Name in ${fieldsFilter}`)
         .then(existingCustomFields => {
-            //todo check ID or Id
             const checkIfEqual = (a, b) => a['Name'] === b['Name']
-                && a['Process']['ID'] === b['Process']['ID']
-                && a['EntityType']['ID'] === b['EntityType']['ID'];
+                && a['Process']['Id'] === b['Process']['Id']
+                && a['EntityType']['Id'] === b['EntityType']['Id'];
 
             return possibleCustomFields.filter(p => existingCustomFields.filter(e => checkIfEqual(e, p)).length === 0)
         });
