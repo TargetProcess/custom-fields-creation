@@ -1,57 +1,40 @@
-const fetch = require('node-fetch');
+const Api = require('/api');
+const config = require('config');
 
-const hostname = 'https://tpsandbox.wargaming.net';
-const accessToken = 'NDY3OkV2NW9ETWgxWCt6SnNDM0FwZEM1VU5RQnlRM1RyV1UwNms5SjhVWUIyVWs9';
-
-
-
-//const filter =  and IsSystem eq true`;
-
-function get(resource, filter = '', takeCount = 1000) {
-    const url = `${hostname}/api/v1/${resource}?format=json&where=${filter}&take=${takeCount}&access_token=${accessToken}`;
-    return fetch(url)
-        .then(res => res.json())
-        .then(json => json['Items'])
-        .catch(error => console.error(error));
-}
+const api = new Api(config.host, config.accessToken);
+//todo kill the token
 
 
-function post(resource, payload) {
-    fetch(`${hostname}/api/v1/${entityTypeResourceName}?resultFormat=json&access_token=${accessToken}`, {
-        method: 'POST',
-        body: JSON.stringify(cf),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => console.log(res))
-    .catch(error => console.log(error));
-}
+function setUpProductFields() {
+    const customFieldNames = ['Product','Subproduct','Component', 'ProductRelation', 'SubproductRelation', 'ComponentRelation'];
+    const entityTypeIds = [4,9,27]; //Epic, Feature and User Story
+    const portfolioProcesses = ['Portfolio', 'Prod_Games', 'Prod_Melesta_Admin_Other', 'Prod_Mobile', 'Prod_Tech&Serv'];
 
+    return api.get('processes')
+        .then(processes => {
+            const processIds = processes
+                .filter(p => !portfolioProcesses.includes(p['Name']))
+                .map(p => p['Id']);
+            return generateCustomFields(customFieldNames, processIds, entityTypeIds);
+        })
+        .then(possibleCustomFields => filterExistingCustomFields(customFieldNames, possibleCustomFields))
+        .then(customFields => {
+            customFields.sort(f => f['Name']);
 
-function getProcesses(customFieldNames) {
-    const fieldsFilter = `('${customFieldNames.join(`','`)}')`;
-    return get('customfields', `(Name in ${fieldsFilter}) and (IsSystem eq 'true')`)
-        .then(existingCustomFields => [...new Set(existingCustomFields.map(f => f['Process']['Name']))])
-        .then (existingProcesses => {
-            return get('processes')
-                .then(processes => {
-                    const portfolioProcesses = ['Portfolio', 'Prod_Games', 'Prod_Melesta_Admin_Other', 'Prod_Mobile', 'Prod_Tech&Serv'];
-                    const excludedProcesses = [...portfolioProcesses, ...existingProcesses];
-                    return processes
-                        .filter(p => ![...excludedProcesses, ...existingProcesses].includes(p))
-                        .map(p => p['Id']);
-                });
+            //todo async → sync loop
+            //customFields.forEach(f => api.post('customfields', f)
         });
 }
 
 
-function prepareCustomFields(customFieldNames, processIds, entityTypeIds) {
-    const fieldsToCreate = [];
+function generateCustomFields(customFieldNames, processIds, entityTypeIds) {
+    const customFields = [];
 
     const f = (a, b) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
     const cartesian = (a, b, ...c) => (b ? cartesian(f(a, b), ...c) : a);
 
     cartesian(customFieldNames, processIds, entityTypeIds)
-        .forEach(([customFieldName, processId, entityTypeId]) => fieldsToCreate.push({
+        .forEach(([customFieldName, processId, entityTypeId]) => customFields.push({
             Name: customFieldName,
             FieldType: 'Text',
             Required: false,
@@ -64,43 +47,21 @@ function prepareCustomFields(customFieldNames, processIds, entityTypeIds) {
             }
         }));
 
-    return fieldsToCreate;
+    return customFields;
 }
 
 
-function setUpProductFields() {
-    const customFieldNames = ['Product','Subproduct','Component', 'ProductRelation', 'SubproductRelation', 'ComponentRelation'];
-    const entityTypeIds = [4,9,27];
+function filterExistingCustomFields(customFieldNames, possibleCustomFields) {
+    const fieldsFilter = `('${customFieldNames.join(`','`)}')`;
+    return api.get('customfields', `Name in ${fieldsFilter}`)
+        .then(existingCustomFields => {
+            //todo check ID or Id
+            const checkIfEqual = (a, b) => a['Name'] === b['Name']
+                && a['Process']['ID'] === b['Process']['ID']
+                && a['EntityType']['ID'] === b['EntityType']['ID'];
 
-    return getProcesses(customFieldNames)
-        .then(processIds => prepareCustomFields(customFieldNames, processIds, entityTypeIds))
-        .then(customFields => console.log(customFields));
+            return possibleCustomFields.filter(p => existingCustomFields.filter(e => checkIfEqual(e, p)).length === 0)
+        });
 }
 
 setUpProductFields();
-
-//4,9,27
-//15
-
-// const cf = {
-//     Name: 'Product',
-//     FieldType: 'Text',
-//     Required: false,
-//     IsSystem: true,
-//     EntityType: {
-//         ID: 4
-//     },
-//     Process: {
-//         ID: 15
-//     }
-// };
-//
-// console.log(JSON.stringify(cf));
-//
-// fetch(`${hostname}/api/v1/${entityTypeResourceName}?resultFormat=json&access_token=${accessToken}`, {
-//         method: 'POST',
-//         body: JSON.stringify(cf),
-//         headers: { 'Content-Type': 'application/json' }
-//     })
-//     .then(res => console.log(res))
-//     .catch(error => console.log(error));
