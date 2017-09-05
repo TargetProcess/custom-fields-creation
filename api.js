@@ -13,7 +13,10 @@ module.exports = class {
         return fetch(url)
             .then(res => res.json())
             .then(json => json['Items'])
-            .catch(error => console.error(error));
+            .catch(error => {
+                console.log(error);
+                return error;
+            });
     }
 
 
@@ -23,7 +26,13 @@ module.exports = class {
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'application/json' }
         })
-            .then(res => console.log(res))
-            .catch(error => console.log(error));
+            .then(res => {
+                console.log(res['status']);
+                return res;
+            })
+            .catch(error => {
+                console.log(error);
+                return error;
+            });
     }
 };

@@ -20,16 +20,10 @@ function setUpProductFields() {
         .then(customFields => {
             customFields.sort(f => f['Name']);
 
-            const forEachSync = (array, asyncFunc, i) => {
-                if (i < customFields.length) {
-                    return asyncFunc(array[i])
-                        .then(res => forEachSync(array, asyncFunc, i+1));
-                } else {
-                    return Promise.resolve();
-                }
-            };
-
-            return forEachSync(customFields, customField => api.post('customfields', customField), 0);
+            return customFields
+                //.filter(customField => customField['Process']['Id'] === 15)
+                //.slice(0, 5)
+                .reduce((promise, customField) => promise.then(res => api.post('customfields', customField)), Promise.resolve());
         });
 }
 
