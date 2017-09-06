@@ -1,5 +1,5 @@
 const Api = require('./api');
-const config = require('./config');
+const config = require('./config')['sandbox'];
 
 const api = new Api(config.host, config.accessToken);
 

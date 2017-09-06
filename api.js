@@ -27,7 +27,7 @@ module.exports = class {
             headers: { 'Content-Type': 'application/json' }
         })
             .then(res => {
-                console.log(res['status']);
+                console.log(`${new Date().toLocaleString()}: ${res['status']}`);
                 return res;
             })
             .catch(error => {
