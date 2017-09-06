@@ -23,6 +23,7 @@ function setUpProductFields() {
             return customFields
                 //.filter(customField => customField['Process']['Id'] === 15)
                 //.slice(0, 5)
+                //.forEach(customField => api.post('customfields', customField))
                 .reduce((promise, customField) => promise.then(res => api.post('customfields', customField)), Promise.resolve());
         });
 }
