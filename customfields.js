@@ -5,25 +5,21 @@ const api = new Api(config.host, config.accessToken);
 
 
 function setUpProductFields() {
-    const customFieldNames = ['Product','Subproduct','Component', 'ProductRelation', 'SubproductRelation', 'ComponentRelation'];
-    const entityTypeIds = [4,9,27]; //Epic, Feature and User Story
-    const portfolioProcesses = ['Portfolio', 'Prod_Games', 'Prod_Melesta_Admin_Other', 'Prod_Mobile', 'Prod_Tech&Serv'];
-
     return api.get('processes')
         .then(processes => {
             const processIds = processes
-                .filter(p => !portfolioProcesses.includes(p['Name']))
+                .filter(p => !config.excludedProcesses.includes(p['Name']))
                 .map(p => p['Id']);
-            return generateCustomFields(customFieldNames, processIds, entityTypeIds);
+            return generateCustomFields(config.customFieldNames, processIds, config.entityTypeIds);
         })
-        .then(possibleCustomFields => filterExistingCustomFields(customFieldNames, possibleCustomFields))
+        .then(possibleCustomFields => filterExistingCustomFields(config.customFieldNames, possibleCustomFields))
         .then(customFields => {
             customFields.sort(f => f['Name']);
 
             return customFields
                 //.filter(customField => customField['Process']['Id'] === 15)
                 //.slice(0, 5)
-                //.forEach(customField => api.post('customfields', customField))
+                //.forEach(customField => api.post('customfields', customField)) //DANGER!
                 .reduce((promise, customField) => promise.then(res => api.post('customfields', customField)), Promise.resolve());
         });
 }
