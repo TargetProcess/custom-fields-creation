@@ -1,5 +1,6 @@
 module.exports = {
-    excludedProcesses: [ 6, 25, 26, 28, 29, 85 ], //check if Ids are the same on production
+    excludedProcesses: [ 6, 25, 26, 28, 29 ], //check if Ids are the same on production
+    //excludedProcesses: [ 4, 5 ],
     entityTypes: [
         { id: 27, name: 'epic' },
         { id: 9,  name: 'feature' },
@@ -7,6 +8,24 @@ module.exports = {
     ],
     customFieldType: 'Entity',
     metrics: [
+        /*
+        {
+            name: 'Test A',
+            entityTypes: [ "epic", "feature", "userstory" ],
+            customMetricSettings: {
+                formula: "Name",
+                targetCustomFieldName: "RenameMe"
+            }
+        },
+        {
+            name: 'Test B',
+            entityTypes: [ "epic", "feature", "userstory" ],
+            customMetricSettings: {
+                formula: "Id",
+                targetCustomFieldName: "TestId"
+            },
+        }
+        */
         {
             name: 'Product',
             entityTypes: [ "epic", "feature", "userstory" ],
@@ -52,7 +71,7 @@ module.exports = {
             entityTypes: [ "epic" ],
             customMetricSettings: {
                 formula: "IIF(CustomValues['ComponentRelation'] != null, CustomValues.Entity('ComponentRelation').ID, null)",
-                targetCustomFieldName: "Subproduct"
+                targetCustomFieldName: "Component"
             },
         },
         {

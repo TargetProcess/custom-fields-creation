@@ -14,7 +14,9 @@ module.exports = (api, config) => {
                     return possibleCustomFields.filter(p => existingCustomFields.filter(e => checkIfEqual(e, p)).length === 0)
                 })
                 .then(customFields => {
-                    return filteredProcesses.map(p => customFields.filter(cf => cf['Process']['Id'] === p['Id']))
+                    return filteredProcesses
+                        .map(p => customFields.filter(cf => cf['Process']['Id'] === p['Id']))
+                        .filter(processCFs => processCFs.length > 0)
                         .reduce((promise, processCFs) => promise.then(res => api.post('customfields', processCFs, { isBulk: true })), Promise.resolve());
                 });
         });

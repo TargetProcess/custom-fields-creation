@@ -30,6 +30,9 @@ module.exports = class {
     post(resource, payload, config = {}) {
         const gateway = config.isBulk ? '/bulk' : config.id ? `/${config.id}` : '';
 
+        //console.log(`${this._getEndpoint(resource)}${gateway}?resultFormat=json&access_token=${this.accessToken}`);
+        //console.log(JSON.stringify(payload));
+
         return fetch(`${this._getEndpoint(resource)}${gateway}?resultFormat=json&access_token=${this.accessToken}`, {
             method: 'POST',
             body: JSON.stringify(payload),
