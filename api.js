@@ -7,12 +7,19 @@ module.exports = class {
         this.accessToken = accessToken;
     }
 
-    get(resource, filter = '', takeCount = 10000) {
-        const url = `${this.host}/api/v1/${resource}?format=json&where=${filter}&take=${takeCount}&access_token=${this.accessToken}`;
+    _getEndpoint(resource) {
+        return {
+            'metrics': `${this.host}/api/metricsetup/v1`
+        }[resource] || `${this.host}/api/v1/${resource}`;
+    }
 
-        return fetch(url)
+    get(resource, config = {}) {
+        const filter = config.filter ? `&where=${config.filter}` : '';
+        const takeCount = config.takeCount || 1000;
+
+        return fetch(`${this._getEndpoint(resource)}?format=json${filter}&take=${takeCount}&access_token=${this.accessToken}`)
             .then(res => res.json())
-            .then(json => json['Items'])
+            .then(json => json['Items'] || json['items'])
             .catch(error => {
                 console.log(error);
                 return error;
@@ -20,8 +27,10 @@ module.exports = class {
     }
 
 
-    post(resource, payload, isBulk = false) {
-        return fetch(`${this.host}/api/v1/${resource}${isBulk ? '/bulk' : ''}?resultFormat=json&access_token=${this.accessToken}`, {
+    post(resource, payload, config = {}) {
+        const gateway = config.isBulk ? '/bulk' : config.id ? `/${config.id}` : '';
+
+        return fetch(`${this._getEndpoint(resource)}${gateway}?resultFormat=json&access_token=${this.accessToken}`, {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'application/json' }

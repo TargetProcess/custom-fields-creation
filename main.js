@@ -1,4 +1,4 @@
-const config = require('./config')['staging'];
+const config = require('./environments')['staging'];
 const Api = require('./api');
 
 const batchCreateCFs = require('./custom-fields/batch-create');

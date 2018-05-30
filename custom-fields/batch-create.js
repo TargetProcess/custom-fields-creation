@@ -5,7 +5,7 @@ module.exports = (api, config) => {
             const possibleCustomFields = generateCFs(filteredProcesses, config);
 
             const fieldsFilter = `('${config.customFieldNames.join(`','`)}')`;
-            return api.get('customfields', `Name in ${fieldsFilter}`)
+            return api.get('customfields', { filter: `Name in ${fieldsFilter}` })
                 .then(existingCustomFields => {
                     const checkIfEqual = (a, b) => a['Name'] === b['Name']
                         && a['Process']['Id'] === b['Process']['Id']
@@ -15,7 +15,7 @@ module.exports = (api, config) => {
                 })
                 .then(customFields => {
                     return filteredProcesses.map(p => customFields.filter(cf => cf['Process']['Id'] === p['Id']))
-                        .reduce((promise, processCFs) => promise.then(res => api.post('customfields', processCFs, true)), Promise.resolve());
+                        .reduce((promise, processCFs) => promise.then(res => api.post('customfields', processCFs, { isBulk: true })), Promise.resolve());
                 });
         });
 };

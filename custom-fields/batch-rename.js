@@ -1,7 +1,6 @@
 module.exports = (api, config) => {
     const names = Object.keys(config.newNames).map(n => `"${n}"`).join(',');
-    const filter = `Name in (${names})`;
-    return api.get('customfields', filter)
+    return api.get('customfields', { filter: `Name in (${names})` })
         .then(customFields => {
             const renamedCustomFields = customFields
                 .filter(cf => !config.excludedProcesses.includes(cf['Process']['Name']) &&
@@ -11,6 +10,6 @@ module.exports = (api, config) => {
                     Name: config.newNames[cf['Name']]
                 }));
 
-            api.post('customfields', renamedCustomFields, true);
+            api.post('customfields', renamedCustomFields, { isBulk: true });
         })
 };
