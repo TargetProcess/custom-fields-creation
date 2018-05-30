@@ -1,7 +1,7 @@
 module.exports = (api, config) => {
     return api.get('processes')
         .then(processes => {
-            const filteredProcesses = processes.filter(p => !config.excludedProcesses.includes(p['Name']));
+            const filteredProcesses = processes.filter(p => !config.excludedProcesses.includes(p['Id']));
             const possibleCustomFields = generateCFs(filteredProcesses, config);
 
             const fieldsFilter = `('${config.customFieldNames.join(`','`)}')`;

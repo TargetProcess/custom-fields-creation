@@ -1,11 +1,15 @@
-const environment = require('../environments')['staging'];
-const Api = require('../api');
+const environment = require('../../environments')['staging'];
+const data = require('./data');
+const Api = require('../../api');
 
-const batchUpdateMetrics = require('../metrics/batch-update');
+const batchUpdateMetrics = require('../../metrics/batch-update');
+const batchCreateMetrics = require('../../metrics/batch-create');
 
 
 const api = new Api(environment.host, environment.accessToken);
 
+
+/*
 const config = {
     newNames: {
         'Product': 'ProductText',
@@ -32,3 +36,12 @@ const config = {
 };
 
 batchUpdateMetrics(api, config);
+*/
+
+
+const metricsConfig = {
+    metrics: data.metrics,
+    excludedProcesses: data.excludedProcesses
+};
+
+batchCreateMetrics(api, metricsConfig);

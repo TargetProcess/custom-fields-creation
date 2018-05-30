@@ -3,7 +3,7 @@ module.exports = (api, config) => {
     return api.get('customfields', { filter: `Name in (${names})` })
         .then(customFields => {
             const renamedCustomFields = customFields
-                .filter(cf => !config.excludedProcesses.includes(cf['Process']['Name']) &&
+                .filter(cf => !config.excludedProcesses.includes(cf['Process']['Id']) &&
                                config.entityTypeIds.includes(cf['EntityType']['Id']))
                 .map(cf => ({
                     Id: cf['Id'],

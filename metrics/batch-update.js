@@ -2,12 +2,12 @@ module.exports = (api, config) => {
     const updates = [
         {
             id: 'rename',
-            filter: m => Object.keys(config.newNames).includes(m.name),
+            filter: m => config.newNames && Object.keys(config.newNames).includes(m.name),
             update: m => Object.assign({}, m, { name: config.newNames[m.name] })
         },
         {
             id: 'replaceCustomField',
-            filter: m => m.customMetricSettings && Object.keys(config.newCustomFields).includes(m.customMetricSettings.targetCustomFieldName),
+            filter: m => config.newCustomFields && m.customMetricSettings && Object.keys(config.newCustomFields).includes(m.customMetricSettings.targetCustomFieldName),
             update: m => {
                 const currentCF = m.customMetricSettings.targetCustomFieldName;
                 const updatedCustomMetricSettings = Object.assign({}, m.customMetricSettings, { targetCustomFieldName: config.newCustomFields[currentCF] });
