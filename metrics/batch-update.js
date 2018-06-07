@@ -31,7 +31,7 @@ module.exports = (api, config) => {
                          Object.keys(config.newCustomFields).some(cf => m.customMetricSettings.formula.includes(`['${cf}']`)),
             update: m => {
                 const updatedFormula = Object.keys(config.newCustomFields).reduce((formula, cf) => {
-                    let updatedString = formula;
+                    let updatedString = formula; //new RegExp(`['${cf}']`, 'g') for some reason didn't work
                     while (updatedString.includes(`['${cf}']`)) {
                         updatedString = updatedString.replace(`['${cf}']`, `['${config.newCustomFields[cf]}']`);
                     }
